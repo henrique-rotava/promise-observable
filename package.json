@@ -1,0 +1,19 @@
+{
+  "name": "promise-observable",
+  "version": "1.0.3",
+  "description": "A fusion between Promises ans Observables",
+  "scripts": {
+    "build": "npx tsc",
+    "publish": "yarn build && cp package.json dist && cd dist && npm publish",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Henrique Rotava",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/henrique-rotava/promisable"
+  },
+  "dependencies": {
+    "typescript": "^4.7.2"
+  }
+}
