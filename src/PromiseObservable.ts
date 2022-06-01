@@ -1,4 +1,4 @@
-import PromiseObserver from "./PromiseObserver";
+import PromiseObserver, { RefWrapper } from "./PromiseObserver";
 import PromiseSubscription from "./PromiseSubscription";
 
 export default class PromiseObservable<T> {
@@ -16,16 +16,19 @@ export default class PromiseObservable<T> {
 
   private createPromise(timeout?: number) {
     let promise: Promise<T>;
+    const refWrapper: RefWrapper<T> = {};
+
     if (this.resolved && this.value !== undefined) {
       promise = Promise.resolve(this.value);
     } else if (this.rejected) {
       promise = Promise.reject(this.reason);
     } else {
       promise = new Promise<T>((resolve, reject) => {
-        const subscriber = new PromiseObserver(promise, resolve, reject);
+        const subscriber = new PromiseObserver(refWrapper, resolve, reject);
         if (timeout) setTimeout(() => reject(new Error("expired")), timeout);
         this.subscribers.push(subscriber);
       });
+      refWrapper.promise = promise;
     }
     return promise;
   }
@@ -36,19 +39,22 @@ export default class PromiseObservable<T> {
 
   public subscribe(): PromiseSubscription<T> {
     const promise = this.createPromise();
-    const subject = new PromiseSubscription<T>(promise, this);
-    return subject;
+    return new PromiseSubscription<T>(promise, this);
   }
 
+  /**
+   * Will subscribe until an amount of time, then it will be rejected if not resolved previoulsy
+   * @param timeout expiring time
+   * @returns a subscription
+   */
   public subscribeUntil(timeout: number): PromiseSubscription<T> {
     const promise = this.createPromise(timeout);
-    const subject = new PromiseSubscription<T>(promise, this);
-    return subject;
+    return new PromiseSubscription<T>(promise, this);
   }
 
   public unsubscribe(subject: PromiseSubscription<T>) {
     this.subscribers = this.subscribers.filter(
-      (subscriber) => subject.value() !== subscriber.promise
+      (subscriber) => !subscriber.compare(subject.value())
     );
   }
 

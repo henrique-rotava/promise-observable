@@ -9,7 +9,7 @@ export default class PromiseSubscription<T> {
     this.promisable = promisable;
   }
 
-  public async value(): Promise<T> {
+  public value(): Promise<T> {
     return this._value;
   }
 
